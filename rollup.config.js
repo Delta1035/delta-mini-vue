@@ -1,4 +1,4 @@
 console.log(process.env.TARGET, ">>>>>>>>>>>>>>>>>>>>>>>>>");
+import execa from "execa";
 import path from "path";
-import ;
-const packagesDir = path.resolve(__dirname);
+const packagesDir = path.resolve(__dirname, execa);
