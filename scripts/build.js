@@ -1,7 +1,11 @@
 // 把package下的所有包都打包一下
-const fs = require("fs");
-const { PACKAGES } = require("../constant");
-const execa = require("execa");
+// const fs = require("fs");
+// const { PACKAGES } = require("../constant");
+// const execa = require("execa");
+import execa from "execa";
+import fs from "fs";
+// import { PACKAGES } from "../constant";
+import { PACKAGES } from "../constant.js";
 const targets = fs.readdirSync(PACKAGES).filter((file) => {
   console.log(file);
   if (fs.statSync(PACKAGES + "/" + file).isDirectory()) {
