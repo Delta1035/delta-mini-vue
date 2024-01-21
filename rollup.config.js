@@ -45,7 +45,9 @@ const fileName = path.basename(packageDir);
 // 拿到对应包的package.json配置文件
 // const pkg = import(resolve(PACKAGE_JSON));
 const jsonPath = resolve(PACKAGE_JSON);
-const pkg = fs.readFileSync(jsonPath, { encoding: "utf-8" });
+console.log("jsonPath", jsonPath);
+const pkg = JSON.parse(fs.readFileSync(jsonPath, { encoding: "utf-8" }));
+console.log("pkg 解说", pkg);
 const outputConfig = {
   "esm-bundler": {
     file: resolve(`${DIST}/${fileName}${ESM_BUNDLER_EXT}`),
@@ -57,7 +59,7 @@ const outputConfig = {
   },
   global: {
     file: resolve(`${DIST}/${fileName}${GLOBAL_EXT}`),
-    format: "global",
+    format: "iife",
   },
 };
 console.log("pkg :>>>>>>>>>>>>>>>", pkg, typeof pkg);
@@ -83,5 +85,5 @@ function createConfig(format, output) {
 // rollup需要的打包配置
 export default buildOptions.formats.map((format) => {
   console.log("format: >>>>>>>>>>>>>>>>>", format);
-  createConfig(format, outputConfig[format]);
+  return createConfig(format, outputConfig[format]);
 });
