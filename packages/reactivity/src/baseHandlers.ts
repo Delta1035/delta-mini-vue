@@ -6,8 +6,15 @@
  * Reflect方法有返回值，可以知道操作是否成功,失败需要报异常
  * Reflect可以不使用proxy es6的语法
  */
-import { extend, isObject } from "@vue/shared";
-import { track } from "./effect";
+import {
+  extend,
+  hasChanged,
+  hasOwn,
+  isArray,
+  isIntegerKey,
+  isObject,
+} from "@vue/shared";
+import { track, trigger } from "./effect";
 import { reactive, readonly } from "./reactive";
 // 拦截取值功能
 function createGetter(isReadonly = false, shallow = false) {
@@ -36,6 +43,20 @@ function createSetter(shallow = false) {
   return function get(target, key, value, receiver) {
     const res = Reflect.set(target, key, value, receiver);
     // 当数据更新时 通知对应的属性的effect重新执行
+    // 需要区分是新增还是修改，vue2里面无法监控索引的更改，无法监控数组的长度变化=》hack方法，特殊处理
+    const oldValue = target[key];
+    let hasKey =
+      isArray(target) && isIntegerKey(key)
+        ? Number(key) < target.length
+        : hasOwn(target, key);
+    if (!hasKey) {
+      // 判断是新增还是修改
+      // 不存在这个key，所以是新增
+      trigger(target, TriggerOperatorTypes.ADD, key, value);
+    } else if (hasChanged(oldValue, value)) {
+      // 修改
+      trigger(target, TriggerOperatorTypes.SET, key, value, oldValue);
+    }
     return res;
   };
 }

@@ -1,2 +1,10 @@
 export const isObject = (value) => typeof value == "object" && value !== null;
 export const extend = Object.assign;
+export const isArray = Array.isArray;
+export const isFunction = (v) => typeof v === "function";
+export const isNumber = (v) => typeof v === "number";
+export const isString = (v) => typeof v === "string";
+export const isIntegerKey = (key) => parseInt(key) + "" === key;
+let hasOwnProperty = Object.prototype.hasOwnProperty;
+export const hasOwn = (target, key) => hasOwnProperty.call(target, key);
+export const hasChanged = (oldValue, value) => oldValue === value;

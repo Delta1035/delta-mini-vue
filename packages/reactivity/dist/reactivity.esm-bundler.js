@@ -51,9 +51,17 @@ function track(target, type, key) {
     }
     console.log(targetMap);
 }
+function trigger(target, type, key, newValue, oldValue) {
+    console.log("trigger :>>>>", target, type, key, newValue, oldValue);
+}
 
 const isObject = (value) => typeof value == "object" && value !== null;
 const extend = Object.assign;
+const isArray = Array.isArray;
+const isIntegerKey = (key) => parseInt(key) + "" === key;
+let hasOwnProperty = Object.prototype.hasOwnProperty;
+const hasOwn = (target, key) => hasOwnProperty.call(target, key);
+const hasChanged = (oldValue, value) => oldValue === value;
 
 // 实现代理处理
 // 是不是只读，只读的set需要报异常
@@ -87,6 +95,20 @@ function createSetter(shallow = false) {
     return function get(target, key, value, receiver) {
         const res = Reflect.set(target, key, value, receiver);
         // 当数据更新时 通知对应的属性的effect重新执行
+        // 需要区分是新增还是修改，vue2里面无法监控索引的更改，无法监控数组的长度变化=》hack方法，特殊处理
+        const oldValue = target[key];
+        let hasKey = isArray(target) && isIntegerKey(key)
+            ? Number(key) < target.length
+            : hasOwn(target, key);
+        if (!hasKey) {
+            // 判断是新增还是修改
+            // 不存在这个key，所以是新增
+            trigger(target, 0 /* TriggerOperatorTypes.ADD */, key, value);
+        }
+        else if (hasChanged(oldValue, value)) {
+            // 修改
+            trigger(target, 1 /* TriggerOperatorTypes.SET */, key, value, oldValue);
+        }
         return res;
     };
 }

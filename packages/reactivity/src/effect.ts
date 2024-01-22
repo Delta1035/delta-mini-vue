@@ -52,3 +52,7 @@ export function track(target, type, key) {
   }
   console.log(targetMap);
 }
+
+export function trigger(target, type, key?, newValue?, oldValue?) {
+  console.log("trigger :>>>>", target, type, key, newValue, oldValue);
+}

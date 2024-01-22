@@ -11,16 +11,21 @@
     <script>
       const { effect, readonly, reactive, shallowReactive, shallowReadonly } =
         VueReactivity;
-      const state = reactive({ name: "zhansgan", age: 12, other: "xxx" });
+      const state = reactive({
+        name: "zhansgan",
+        age: 12,
+        other: "旧的值xxx",
+        arr: [1, 2, 3],
+      });
       effect(() => {
         app.innerText = "zhufeng" + state.name + "," + state.age;
-        console.log(app);
       });
-      console.log("1111");
-      //   setTimeout(() => {
-      //     state.other = "xxxxxx";
-      //     state.age = 99;
-      //   }, 1000);
+      setTimeout(() => {
+        state.name = "张三李四";
+        state.other = "新的值other xxxxxx";
+        state.aaa = "新增的属性";
+        state.arr[2] = 100;
+      }, 1000);
     </script>
   </body>
 </html>
