@@ -7,6 +7,7 @@
  * Reflect可以不使用proxy es6的语法
  */
 import { extend, isObject } from "@vue/shared";
+import { track } from "./effect";
 import { reactive, readonly } from "./reactive";
 // 拦截取值功能
 function createGetter(isReadonly = false, shallow = false) {
@@ -14,6 +15,8 @@ function createGetter(isReadonly = false, shallow = false) {
     const res = Reflect.get(target, key, receiver);
     if (!isReadonly) {
       // 收集依赖，等会数据变化后更新对应的视图
+      console.log("执行effect时会取值,收集effect");
+      track(target, TrackOperatorTypes.GET, key);
     }
 
     if (shallow) {
@@ -32,6 +35,7 @@ function createGetter(isReadonly = false, shallow = false) {
 function createSetter(shallow = false) {
   return function get(target, key, value, receiver) {
     const res = Reflect.set(target, key, value, receiver);
+    // 当数据更新时 通知对应的属性的effect重新执行
     return res;
   };
 }

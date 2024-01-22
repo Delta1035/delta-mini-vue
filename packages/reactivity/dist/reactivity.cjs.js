@@ -1,5 +1,59 @@
 'use strict';
 
+function effect(fn, options = {}) {
+    // 让effect变成响应式的，当数据变化之后重新执行
+    const effect = createReactiveEffect(fn, options);
+    if (!options.lazy) {
+        effect();
+    }
+    return effect;
+}
+let uid = 0;
+let activeEffect; // 存储当前的effect
+const effectStack = [];
+function createReactiveEffect(fn, options = {}) {
+    const effect = function reactiveEffect() {
+        if (!effectStack.includes(effect)) {
+            // 确保effect没有加入到effectStack，否则重复添加会导致页面无限刷新
+            try {
+                effectStack.push(effect);
+                activeEffect = effect;
+                return fn();
+            }
+            finally {
+                effectStack.pop();
+                activeEffect = effectStack[activeEffect.length - 1];
+            }
+        }
+    };
+    effect.id = uid++; // effect标识，用于区分effect
+    effect._isEffect = true; // 标识 这是一个响应式effect
+    effect.raw = fn; // 保留原始的函数
+    effect.options = options; // 保留配置项
+    return effect;
+}
+const targetMap = new WeakMap();
+// 让某个对象中的属性收集当前他对应的effect函数
+function track(target, type, key) {
+    console.log("track", target, type, key);
+    if (activeEffect === undefined) {
+        // 没有在effect中使用，所以这个属性不需要收集
+        return;
+    }
+    let depsMap = targetMap.get(target);
+    if (!depsMap) {
+        targetMap.set(target, (depsMap = new Map()));
+    }
+    let dep = depsMap.get(key); // 依赖对应的effect函数
+    if (!dep) {
+        depsMap.set(key, (dep = new Set()));
+    }
+    if (!dep.has(activeEffect)) {
+        dep.add(activeEffect);
+    }
+    console.log(targetMap);
+}
+
 const isObject = (value) => typeof value == "object" && value !== null;
 const extend = Object.assign;
 
@@ -15,6 +69,11 @@ const extend = Object.assign;
 function createGetter(isReadonly = false, shallow = false) {
     return function get(target, key, receiver) {
         const res = Reflect.get(target, key, receiver);
+        if (!isReadonly) {
+            // 收集依赖，等会数据变化后更新对应的视图
+            console.log("执行effect时会取值,收集effect");
+            track(target, 0 /* TrackOperatorTypes.GET */, key);
+        }
         if (shallow) {
             return res;
         }
@@ -29,6 +88,7 @@ function createGetter(isReadonly = false, shallow = false) {
 function createSetter(shallow = false) {
     return function get(target, key, value, receiver) {
         const res = Reflect.set(target, key, value, receiver);
+        // 当数据更新时 通知对应的属性的effect重新执行
         return res;
     };
 }
@@ -87,6 +147,7 @@ function createReactiveObject(target, isReadonly, baseHandlers) {
     return proxy;
 }
 
+exports.effect = effect;
 exports.reactive = reactive;
 exports.readonly = readonly;
 exports.shallowReactive = shallowReactive;

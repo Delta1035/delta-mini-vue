@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">loading...</div>
+    <script src="../node_modules//@vue/reactivity/dist/reactivity.global.js"></script>
+    <script>
+      const { effect, readonly, reactive, shallowReactive, shallowReadonly } =
+        VueReactivity;
+      const state = reactive({ name: "zhansgan", age: 12, other: "xxx" });
+      effect(() => {
+        app.innerText = "zhufeng" + state.name + "," + state.age;
+        console.log(app);
+      });
+      console.log("1111");
+      //   setTimeout(() => {
+      //     state.other = "xxxxxx";
+      //     state.age = 99;
+      //   }, 1000);
+    </script>
+  </body>
+</html>
